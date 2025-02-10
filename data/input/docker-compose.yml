@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  sensor-producer:
+    build: .
+    container_name: sensor-producer
+    networks:
+      - sensor-network-dev
+    env_file:
+      - .env 
+    ports:
+      - "8000:8000"
+    restart: always
+
+networks:
+  sensor-network-dev:
+    external: true

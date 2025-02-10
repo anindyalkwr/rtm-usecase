@@ -1,0 +1,3 @@
+fastapi[standard]
+python-dotenv
+git+https://github.com/anindyalkwr/log-sdk.git

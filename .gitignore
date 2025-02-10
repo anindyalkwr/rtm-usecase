@@ -1,0 +1,40 @@
+# Python bytecode files
+__pycache__/
+*.py[cod]
+
+# Virtual environment directories
+.venv*/
+env/
+venv/
+ENV/
+
+# Distribution / packaging directories
+build/
+dist/
+*.egg-info/
+
+# IDE/editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test coverage reports
+.coverage
+*.cover
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# Environment variable files
+.env
+*.env
+
+# Poetry lock file (if you're using poetry)
+poetry.lock
+
+# Flake8 configuration file
+tox.ini
