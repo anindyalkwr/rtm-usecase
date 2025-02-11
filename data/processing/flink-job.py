@@ -13,6 +13,7 @@ env.set_parallelism(1)
 KAFKA_BROKER = get_env("KAFKA_BROKER")
 KAFKA_TOPIC = get_env("KAFKA_TOPIC")
 CLICKHOUSE_DB = get_env("CLICKHOUSE_DB")
+CLICKHOUSE_TABLE = get_env("CLICKHOUSE_TABLE")
 
 kafka_source = KafkaSource.builder() \
     .set_bootstrap_servers(KAFKA_BROKER) \
@@ -38,7 +39,7 @@ parsed_stream = stream.map(parse_json, output_type=Types.TUPLE([Types.STRING(), 
                                                                 Types.STRING(), Types.STRING()]))
 
 sink = JdbcSink.sink(
-    "INSERT INTO sensor_logs (timestamp, sensor_id, measurement, duration, channel, data_center, product, status, type, unit, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO {CLICKHOUSE_TABLE} (timestamp, sensor_id, measurement, duration, channel, data_center, product, status, type, unit, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     type_info=Types.TUPLE([Types.STRING(), Types.STRING(), Types.FLOAT(), Types.FLOAT(), Types.STRING(), Types.STRING(),
                            Types.STRING(), Types.STRING(), Types.STRING(), Types.STRING(), Types.STRING()]),
     jdbc_execution_options=JdbcExecutionOptions.builder()
