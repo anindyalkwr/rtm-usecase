@@ -1,11 +1,20 @@
 version: '3.8'
+
 services:
   clickhouse:
     image: clickhouse/clickhouse-server:latest
     container_name: clickhouse
     ports:
       - "8123:8123"
+    networks: 
+      - sensor-network-dev
     volumes:
       - clickhouse_data:/var/lib/clickhouse
+      - ./migrations:/migrations
+
 volumes:
   clickhouse_data:
+
+networks:
+  sensor-network-dev:
+    external: true
