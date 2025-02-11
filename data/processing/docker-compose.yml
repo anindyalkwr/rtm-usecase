@@ -1,31 +1,59 @@
-version: '2.1'
+version: "3.5"
+
 services:
   jobmanager:
-    image: pyflink/playgrounds:1.13.0-rc2
-    volumes:
-      - ./flink-job.py:/opt/flink-job.py
-      - ./config:/opt/config
-    hostname: "jobmanager"
-    expose:
-      - "6123"
+    image: building-pyflink-apps:1.17.1
+    command: jobmanager
+    container_name: jobmanager
     ports:
       - "8081:8081"
-    command: jobmanager
+    networks:
+      - sensor-network-dev
     environment:
-      - JOB_MANAGER_RPC_ADDRESS=jobmanager
-  taskmanager:
-    image: pyflink/playgrounds:1.13.0-rc2
+      - .env
+      - BOOTSTRAP_SERVERS=kafka-0:9092
+      - RUNTIME_ENV=docker
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        state.savepoints.dir: file:///tmp/flink-savepoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+        rest.flamegraph.enabled: true
+        web.backpressure.refresh-interval: 10000
     volumes:
-      - ./flink-job.py:/opt/flink-job.py
-      - ./config:/opt/config
-    expose:
-      - "6121"
-      - "6122"
+      - ./:/tmp/src
+
+  taskmanager:
+    image: building-pyflink-apps:1.17.1
+    command: taskmanager
+    container_name: taskmanager
+    networks:
+      - sensor-network-dev
+    volumes:
+      - flink_data:/tmp/
+      - ./:/tmp/src
+    environment:
+      - .env
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 5
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        state.savepoints.dir: file:///tmp/flink-savepoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
     depends_on:
       - jobmanager
-    command: taskmanager
-    links:
-      - jobmanager:jobmanager
-    environment:
-      - JOB_MANAGER_RPC_ADDRESS=jobmanager
-      - TASK_MANAGER_NUMBER_OF_TASK_SLOTS=20
+
+networks:
+  sensor-network-dev:
+    external: true
+
+volumes:
+  flink_data:
+    driver: local
+    name: flink_data
