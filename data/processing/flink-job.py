@@ -27,21 +27,54 @@ stream = env.from_source(kafka_source, watermark_strategy=None, source_name="Kaf
 def parse_json(value):
     try:
         data = json.loads(value)
-        return (data["timestamp"], data["sensor_id"], data["measurement"], data["duration"],
-                data["channel"], data["data_center"], data["product"], data["status"],
-                data["type"], data["unit"], json.dumps(data["metadata"]))
+        return (
+            data["timestamp"],
+            data["sensor_id"],
+            data["channel"],
+            data["data_center"],
+            data["duration"],
+            data["measurement"],
+            data["product"],
+            data["status"],
+            data["type"],
+            data["unit"],
+            json.dumps(data["metadata"])
+        )
     except Exception as e:
         return None
 
-parsed_stream = stream.map(parse_json, output_type=Types.TUPLE([Types.STRING(), Types.STRING(), Types.FLOAT(),
-                                                                Types.FLOAT(), Types.STRING(), Types.STRING(),
-                                                                Types.STRING(), Types.STRING(), Types.STRING(),
-                                                                Types.STRING(), Types.STRING()]))
+parsed_stream = stream.map(
+    parse_json, 
+    output_type=Types.TUPLE([
+        Types.STRING(),  
+        Types.STRING(),  
+        Types.STRING(),
+        Types.STRING(),  
+        Types.FLOAT(),   
+        Types.FLOAT(),   
+        Types.STRING(),  
+        Types.STRING(),  
+        Types.STRING(), 
+        Types.STRING(), 
+        Types.STRING()   
+    ])
+)
 
 sink = JdbcSink.sink(
-    "INSERT INTO {CLICKHOUSE_TABLE} (timestamp, sensor_id, measurement, duration, channel, data_center, product, status, type, unit, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-    type_info=Types.TUPLE([Types.STRING(), Types.STRING(), Types.FLOAT(), Types.FLOAT(), Types.STRING(), Types.STRING(),
-                           Types.STRING(), Types.STRING(), Types.STRING(), Types.STRING(), Types.STRING()]),
+    "INSERT INTO {CLICKHOUSE_TABLE} (timestamp, sensor_id, channel, data_center, duration, measurement, product, status, type, unit, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    type_info=Types.TUPLE([
+        Types.STRING(),  
+        Types.STRING(),  
+        Types.STRING(),
+        Types.STRING(),  
+        Types.FLOAT(),   
+        Types.FLOAT(),   
+        Types.STRING(),  
+        Types.STRING(),  
+        Types.STRING(), 
+        Types.STRING(), 
+        Types.STRING()   
+    ])
     jdbc_execution_options=JdbcExecutionOptions.builder()
         .with_batch_size(500)
         .with_batch_interval_ms(200)
