@@ -73,8 +73,8 @@ sink = JdbcSink.sink(
         Types.STRING(),  
         Types.STRING(), 
         Types.STRING(), 
-        Types.STRING()   
-    ])
+        Types.STRING()
+    ]),
     jdbc_execution_options=JdbcExecutionOptions.builder()
         .with_batch_size(500)
         .with_batch_interval_ms(200)
