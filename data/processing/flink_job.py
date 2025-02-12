@@ -1,7 +1,7 @@
 import os
 import logging
 
-from pyflink.common import WatermarkStrategy
+from pyflink.common import WatermarkStrategy, Types, Row
 from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
 from pyflink.datastream.connectors.kafka import KafkaSource, KafkaOffsetsInitializer
 from pyflink.datastream.connectors.jdbc import JdbcSink, JdbcExecutionOptions, JdbcConnectionOptions
@@ -10,11 +10,14 @@ from pyflink.datastream.formats.json import JsonRowDeserializationSchema
 from config.utils import get_env
 from models.sensor_data import SensorData
 
+
 KAFKA_BOOTSTRAP_SERVERS = get_env("KAFKA_BOOTSTRAP_SERVERS")
 KAFKA_TOPIC = get_env("KAFKA_TOPIC")
 FLINK_GROUP_ID = get_env("FLINK_GROUP_ID")
 
-CLICKHOUSE_JDBC_URL = get_env("CLICKHOUSE_JDBC_URL")
+CLICKHOUSE_URL = get_env("CLICKHOUSE_URL")
+CLICKHOUSE_USERNAME = get_env("CLICKHOUSE_USERNAME")
+CLICKHOUSE_PASSWORD = get_env("CLICKHOUSE_PASSWORD")
 CLICKHOUSE_TABLE = get_env("CLICKHOUSE_TABLE")
 
 RUNTIME_ENV = get_env("RUNTIME_ENV", "local")
@@ -80,22 +83,23 @@ if __name__ == "__main__":
         kafka_source, watermark_strategy=WatermarkStrategy.no_watermarks(), source_name="Kafka Source"
     )
 
-    stream.map(SensorData.from_row).print()
+    mapped_stream = stream.map(SensorData.from_row)
+    mapped_stream.print()
 
     sink = JdbcSink.sink(
         "INSERT INTO {} (timestamp, sensor_id, channel, data_center, duration, measurement, product, status, type, unit, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)".format(CLICKHOUSE_TABLE),
         type_info=SensorData.get_value_type_info(),
         jdbc_execution_options=JdbcExecutionOptions.builder()
-            .with_batch_size(100)
-            .with_batch_interval_ms(200)
+            .with_batch_size(500)
+            .with_batch_interval_ms(100)
             .with_max_retries(3)
             .build(),
         jdbc_connection_options=JdbcConnectionOptions.JdbcConnectionOptionsBuilder()
-            .with_url(CLICKHOUSE_JDBC_URL)
+            .with_url(CLICKHOUSE_URL)
+            .with_user_name(CLICKHOUSE_USERNAME)
+            .with_password(CLICKHOUSE_PASSWORD)
             .with_driver_name("com.clickhouse.jdbc.ClickHouseDriver")
             .build()
     )
-
-    stream.add_sink(sink)
 
     env.execute("Flink Kafka to ClickHouse Job")

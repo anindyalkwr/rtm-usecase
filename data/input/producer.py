@@ -43,7 +43,7 @@ class SensorProducer:
                 measurement = round(VALUE_DISTRIBUTIONS[sensor_type](), 2)
                 status = random.choices(STATUSES, weights=[0.9, 0.05, 0.05, 0.0])[0]
             
-            action = random.choices(ACTIONS, weights=[0.95, 0.05, 0.0, 0.0])[0]
+            action = random.choices(ACTIONS, weights=[0.9995, 0.0005, 0.0, 0.0])[0]
 
             self.logger.update_machine_status(action)
             
