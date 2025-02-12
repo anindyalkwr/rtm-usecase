@@ -15,17 +15,19 @@ from config.constants import (
     STATUSES,
     VALUE_DISTRIBUTIONS,
     NORMAL_DURATION_DISTRIBUTION,
-    ANOMALY_DURATION_DISTRIBUTION
+    ANOMALY_DURATION_DISTRIBUTION,
+    SENSOR_ID,
+    KAFKA_BOOTSTRAP_SERVERS,
+    KAFKA_TOPIC
 )
-from config.utils import get_env
 from config.logger import logger
 
 class SensorProducer:
     def __init__(self):
         self.logger = LoggerConfig(
-            sensor_id=get_env("SENSOR_ID"),
-            KAFKA_BROKERS=get_env("KAFKA_BROKERS"),
-            KAFKA_TOPIC=get_env("KAFKA_TOPIC"),
+            sensor_id=SENSOR_ID,
+            KAFKA_BOOTSTRAP_SERVERS=KAFKA_BOOTSTRAP_SERVERS,
+            KAFKA_TOPIC=KAFKA_TOPIC,
             kafka_enabled=True
         )
 

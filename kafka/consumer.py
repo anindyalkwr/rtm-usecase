@@ -1,10 +1,10 @@
 from confluent_kafka import Consumer
 
-KAFKA_BROKERS = "kafka:9092"
+KAFKA_BOOTSTRAP_SERVERS = "kafka:9092"
 KAFKA_TOPIC = "sensor_logs"
 
 consumer_config = {
-    "bootstrap.servers": KAFKA_BROKERS,
+    "bootstrap.servers": KAFKA_BOOTSTRAP_SERVERS,
     "group.id": "sensor_group",
     "auto.offset.reset": "earliest",
 }

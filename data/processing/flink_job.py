@@ -1,26 +1,24 @@
 import os
-import logging
 
-from pyflink.common import WatermarkStrategy, Types, Row
+from pyflink.common import WatermarkStrategy
 from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
-from pyflink.datastream.connectors.kafka import KafkaSource, KafkaOffsetsInitializer
+from pyflink.datastream.connectors.kafka import KafkaSource
 from pyflink.datastream.connectors.jdbc import JdbcSink, JdbcExecutionOptions, JdbcConnectionOptions
 from pyflink.datastream.formats.json import JsonRowDeserializationSchema
 
+from config.constants import (
+    KAFKA_BOOTSTRAP_SERVERS,
+    KAFKA_TOPIC,
+    FLINK_GROUP_ID,
+    CLICKHOUSE_URL,
+    CLICKHOUSE_USERNAME,
+    CLICKHOUSE_PASSWORD,
+    CLICKHOUSE_TABLE,
+    RUNTIME_ENV
+)
+from config.logger import logger
 from config.utils import get_env
 from models.sensor_data import SensorData
-
-
-KAFKA_BOOTSTRAP_SERVERS = get_env("KAFKA_BOOTSTRAP_SERVERS")
-KAFKA_TOPIC = get_env("KAFKA_TOPIC")
-FLINK_GROUP_ID = get_env("FLINK_GROUP_ID")
-
-CLICKHOUSE_URL = get_env("CLICKHOUSE_URL")
-CLICKHOUSE_USERNAME = get_env("CLICKHOUSE_USERNAME")
-CLICKHOUSE_PASSWORD = get_env("CLICKHOUSE_PASSWORD")
-CLICKHOUSE_TABLE = get_env("CLICKHOUSE_TABLE")
-
-RUNTIME_ENV = get_env("RUNTIME_ENV", "local")
 
 if __name__ == "__main__":
     """
@@ -41,13 +39,7 @@ if __name__ == "__main__":
     -d
     """
 
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s.%(msecs)03d:%(levelname)s:%(name)s:%(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-
-    logging.info(f"RUNTIME_ENV - {RUNTIME_ENV}, BOOTSTRAP_SERVERS - {KAFKA_BOOTSTRAP_SERVERS}")
+    logger.info(f"RUNTIME_ENV - {RUNTIME_ENV}, BOOTSTRAP_SERVERS - {KAFKA_BOOTSTRAP_SERVERS}")
 
     env = StreamExecutionEnvironment.get_execution_environment()
     env.set_runtime_mode(RuntimeExecutionMode.STREAMING)
@@ -62,7 +54,7 @@ if __name__ == "__main__":
         [f"file://{os.path.join(JAR_DIR, name)}" for name in jar_files]
     )
 
-    logging.info(f"adding local jars - {', '.join(jar_files)}")
+    logger.info(f"adding local jars - {', '.join(jar_files)}")
     env.add_jars(*jar_paths)
 
     kafka_source = (
