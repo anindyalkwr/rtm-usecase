@@ -70,7 +70,6 @@ if __name__ == "__main__":
         .set_bootstrap_servers(KAFKA_BOOTSTRAP_SERVERS) 
         .set_topics(KAFKA_TOPIC) 
         .set_group_id(FLINK_GROUP_ID)
-        .set_starting_offsets(KafkaOffsetsInitializer.latest())
         .set_value_only_deserializer(
             JsonRowDeserializationSchema.builder()
             .type_info(SensorData.get_value_type_info())
