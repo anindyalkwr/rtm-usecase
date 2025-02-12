@@ -2,6 +2,8 @@ import dataclasses
 
 from pyflink.common import Types, Row
 
+from config.utils import serialize
+
 @dataclasses.dataclass
 class SensorData:
     timestamp: str
@@ -37,7 +39,7 @@ class SensorData:
 
     def to_row(self):
         return Row(
-            timestamp=self.timestamp,
+            timestamp=serialize(self.timestamp),
             sensor_id=self.sensor_id,
             channel=self.channel,
             data_center=self.data_center,

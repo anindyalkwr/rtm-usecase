@@ -9,3 +9,7 @@ def get_env(variable_name: str, default_value=None):
     Retrieve an environment variable with an optional default value.
     """
     return os.environ.get(variable_name, default_value)
+
+def serialize(obj):
+    if isinstance(obj, str):
+        return obj.replace("T", " ")

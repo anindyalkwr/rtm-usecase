@@ -83,8 +83,7 @@ if __name__ == "__main__":
         kafka_source, watermark_strategy=WatermarkStrategy.no_watermarks(), source_name="Kafka Source"
     )
 
-    mapped_stream = stream.map(SensorData.from_row)
-    mapped_stream.print()
+    stream.map(SensorData.from_row).print()
 
     sink = JdbcSink.sink(
         "INSERT INTO {} (timestamp, sensor_id, channel, data_center, duration, measurement, product, status, type, unit, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)".format(CLICKHOUSE_TABLE),
@@ -101,5 +100,10 @@ if __name__ == "__main__":
             .with_driver_name("com.clickhouse.jdbc.ClickHouseDriver")
             .build()
     )
+
+    stream.map(
+        SensorData.to_row, 
+        output_type=SensorData.get_value_type_info()
+    ).add_sink(sink)
 
     env.execute("Flink Kafka to ClickHouse Job")
