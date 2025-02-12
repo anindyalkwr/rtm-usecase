@@ -1,3 +1,7 @@
+CREATE DATABASE IF NOT EXISTS sensor_logs_db;
+
+USE sensor_logs_db;
+
 CREATE TABLE IF NOT EXISTS sensor_logs (
     timestamp DateTime64(3, 'Asia/Jakarta'),
     sensor_id String,

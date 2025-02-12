@@ -11,8 +11,6 @@ services:
       - sensor-network-dev
     environment:
       - .env
-      - BOOTSTRAP_SERVERS=kafka-0:9092
-      - RUNTIME_ENV=docker
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager

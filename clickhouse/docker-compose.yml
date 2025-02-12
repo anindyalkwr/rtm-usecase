@@ -10,6 +10,9 @@ services:
       - sensor-network-dev
     volumes:
       - clickhouse_data:/var/lib/clickhouse
+      - ./config/clickhouse-keeper:/etc/clickhouse-keeper
+      - ./config/clickhouse-server/config.xml:/etc/clickhouse-server/config.xml
+      - ./config/clickhouse-server/users.xml:/etc/clickhouse-server/users.xml
       - ./migrations:/migrations
 
 volumes:
