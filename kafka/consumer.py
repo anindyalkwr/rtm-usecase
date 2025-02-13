@@ -1,6 +1,6 @@
 from confluent_kafka import Consumer
 
-KAFKA_BOOTSTRAP_SERVERS = "kafka:9092"
+KAFKA_BOOTSTRAP_SERVERS = "localhost:9094"
 KAFKA_TOPIC = "sensor_logs"
 
 consumer_config = {

@@ -17,7 +17,6 @@ from config.constants import (
     RUNTIME_ENV
 )
 from config.logger import logger
-from config.utils import get_env
 from models.sensor_data import SensorData
 
 if __name__ == "__main__":
