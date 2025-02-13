@@ -1,5 +1,6 @@
 import asyncio
 import random
+
 from log_sdk.logger_config import LoggerConfig
 from log_sdk.common.channel import Channel
 from log_sdk.common.data_center import DataCenter
@@ -52,7 +53,6 @@ class SensorProducer:
             action = random.choices(ACTIONS, weights=[0.9995, 0.0005, 0.0, 0.0])[0]
             self.logger.update_machine_status(action)
             
-            # Map the sensor type to its corresponding async logging method
             log_function = {
                 "Vibration": self.logger.log_vibration,
                 "Temperature": self.logger.log_temperature,
@@ -71,5 +71,4 @@ class SensorProducer:
                     status=status,
                 )
 
-            # Use asyncio.sleep for non-blocking delay
             await asyncio.sleep(max(0.1, random.gauss(1.0, 0.5)))
