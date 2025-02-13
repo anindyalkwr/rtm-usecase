@@ -59,8 +59,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 17,
+        "h": 7,
+        "w": 12,
         "x": 0,
         "y": 1
       },
@@ -97,11 +97,11 @@
           },
           "pluginVersion": "4.7.0",
           "queryType": "table",
-          "rawSql": "WITH sensor_stats AS (\r\n  SELECT\r\n    sensor_id,\r\n    count(*) AS total_count,\r\n    sum(if(status = 'Normal', 1, 0)) AS normal_count\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE $__timeFilter(timestamp)\r\n  GROUP BY sensor_id\r\n)\r\nSELECT\r\n  sensor_id,\r\n  (normal_count / CAST(total_count AS Float64)) * 100 AS percentage_normal\r\nFROM sensor_stats\r\nORDER BY sensor_id ASC",
+          "rawSql": "WITH sensor_stats AS (\r\n  SELECT\r\n    sensor_id,\r\n    count(*) AS total_count,\r\n    sum(if(status = 'Normal', 1, 0)) AS normal_count\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE $__timeFilter(timestamp)\r\n        AND sensor_id IN ($sensor_id)\r\n        AND data_center IN ($data_center)\r\n        AND product IN ($product)\r\n  GROUP BY sensor_id\r\n)\r\nSELECT\r\n  sensor_id,\r\n  (normal_count / CAST(total_count AS Float64)) * 100 AS percentage_normal\r\nFROM sensor_stats\r\nORDER BY sensor_id ASC",
           "refId": "A"
         }
       ],
-      "title": "Normal Percentage for each Sensor",
+      "title": "Sensor Health Percentage for Each Sensor",
       "type": "gauge"
     },
     {
@@ -115,13 +115,40 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
             }
           },
-          "mappings": []
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
         },
         "overrides": [
           {
@@ -172,34 +199,34 @@
         ]
       },
       "gridPos": {
-        "h": 8,
-        "w": 7,
-        "x": 17,
+        "h": 7,
+        "w": 12,
+        "x": 12,
         "y": 1
       },
       "id": 10,
       "options": {
-        "displayLabels": [
-          "percent"
-        ],
+        "barRadius": 0,
+        "barWidth": 0.95,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
         "legend": {
+          "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
         },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "stacking": "normal",
         "tooltip": {
           "hideZeros": false,
           "mode": "single",
           "sort": "none"
-        }
+        },
+        "xField": "sensor_id",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
       },
       "pluginVersion": "11.5.1",
       "targets": [
@@ -218,12 +245,369 @@
           },
           "pluginVersion": "4.7.0",
           "queryType": "table",
-          "rawSql": "WITH status_counts AS (\r\n  SELECT \r\n    sensor_id,\r\n    sum(if(status = 'Normal', 1, 0)) AS Normal,\r\n    sum(if(status = 'Critical', 1, 0)) AS Critical,\r\n    sum(if(status NOT IN ('Normal', 'Critical'), 1, 0)) AS Other\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE $__timeFilter(timestamp)\r\n  GROUP BY sensor_id\r\n)\r\nSELECT\r\n  sensor_id,\r\n  Normal,\r\n  Critical,\r\n  Other\r\nFROM status_counts\r\nORDER BY sensor_id ASC;\r\n",
+          "rawSql": "WITH status_counts AS (\r\n  SELECT \r\n    sensor_id,\r\n    sum(if(status = 'Normal', 1, 0)) AS Normal,\r\n    sum(if(status = 'Critical', 1, 0)) AS Critical,\r\n    sum(if(status NOT IN ('Normal', 'Critical'), 1, 0)) AS Other\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE $__timeFilter(timestamp)\r\n        AND sensor_id IN ($sensor_id)\r\n        AND data_center IN ($data_center)\r\n        AND product IN ($product)\r\n  GROUP BY sensor_id\r\n)\r\nSELECT\r\n  sensor_id,\r\n  Normal,\r\n  Critical,\r\n  Other\r\nFROM status_counts\r\nORDER BY sensor_id ASC;\r\n",
           "refId": "A"
         }
       ],
       "title": "Sensor Data Distribution by Status",
-      "type": "piechart"
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "cectyjnllkr9cf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "text",
+            "mode": "fixed"
+          },
+          "mappings": [
+            {
+              "options": {
+                "Start": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Started"
+                },
+                "Stop": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Stopped"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 8
+      },
+      "id": 21,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "value",
+        "wideLayout": false
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.7.0",
+          "queryType": "table",
+          "rawSql": "WITH latest_sensor_log AS (\r\n  SELECT \r\n\tJSONExtractString(metadata, 'machine_status') AS machine_status,\r\n\tmetadata\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE sensor_id = 'sensor-001'\r\n        AND $__timeFilter(timestamp)\r\n        AND sensor_id IN ($sensor_id)\r\n        AND data_center IN ($data_center)\r\n        AND product IN ($product)\r\n  ORDER BY timestamp DESC\r\n  LIMIT 1\r\n)\r\nSELECT \r\n  machine_status AS \"Machine Status\",\r\n  CASE \r\n    WHEN machine_status = 'Start' THEN JSONExtractString(metadata, 'uptime')\r\n    WHEN machine_status = 'Stop'  THEN JSONExtractString(metadata, 'downtime')\r\n  END AS \"Status Time\"\r\nFROM latest_sensor_log;",
+          "refId": "A"
+        }
+      ],
+      "title": "Sensor-001 Status",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "cectyjnllkr9cf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "text",
+            "mode": "fixed"
+          },
+          "mappings": [
+            {
+              "options": {
+                "Start": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Started"
+                },
+                "Stop": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Stopped"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 8
+      },
+      "id": 22,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.7.0",
+          "queryType": "table",
+          "rawSql": "WITH latest_sensor_log AS (\r\n  SELECT \r\n\tJSONExtractString(metadata, 'machine_status') AS machine_status,\r\n\tmetadata\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE sensor_id = 'sensor-002'\r\n        AND $__timeFilter(timestamp)\r\n        AND sensor_id IN ($sensor_id)\r\n        AND data_center IN ($data_center)\r\n        AND product IN ($product)\r\n  ORDER BY timestamp DESC\r\n  LIMIT 1\r\n)\r\nSELECT \r\n  machine_status,\r\n  CASE \r\n    WHEN machine_status = 'Start' THEN JSONExtractString(metadata, 'uptime')\r\n    WHEN machine_status = 'Stop'  THEN JSONExtractString(metadata, 'downtime')\r\n  END AS metadata_time\r\nFROM latest_sensor_log;",
+          "refId": "A"
+        }
+      ],
+      "title": "Sensor-002 Status",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "cectyjnllkr9cf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "text",
+            "mode": "fixed"
+          },
+          "mappings": [
+            {
+              "options": {
+                "Start": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Started"
+                },
+                "Stop": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Stopped"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 8
+      },
+      "id": 23,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.7.0",
+          "queryType": "table",
+          "rawSql": "WITH latest_sensor_log AS (\r\n  SELECT \r\n\tJSONExtractString(metadata, 'machine_status') AS machine_status,\r\n\tmetadata\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE sensor_id = 'sensor-003'\r\n        AND $__timeFilter(timestamp)\r\n        AND sensor_id IN ($sensor_id)\r\n        AND data_center IN ($data_center)\r\n        AND product IN ($product)\r\n  ORDER BY timestamp DESC\r\n  LIMIT 1\r\n)\r\nSELECT \r\n  machine_status,\r\n  CASE \r\n    WHEN machine_status = 'Start' THEN JSONExtractString(metadata, 'uptime')\r\n    WHEN machine_status = 'Stop'  THEN JSONExtractString(metadata, 'downtime')\r\n  END AS metadata_time\r\nFROM latest_sensor_log;",
+          "refId": "A"
+        }
+      ],
+      "title": "Sensor-003 Status",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "cectyjnllkr9cf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "text",
+            "mode": "fixed"
+          },
+          "mappings": [
+            {
+              "options": {
+                "Start": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Started"
+                },
+                "Stop": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Stopped"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 8
+      },
+      "id": 24,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.7.0",
+          "queryType": "table",
+          "rawSql": "WITH latest_sensor_log AS (\r\n  SELECT \r\n\tJSONExtractString(metadata, 'machine_status') AS machine_status,\r\n\tmetadata\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE sensor_id = 'sensor-004'\r\n        AND $__timeFilter(timestamp)\r\n        AND sensor_id IN ($sensor_id)\r\n        AND data_center IN ($data_center)\r\n        AND product IN ($product)\r\n  ORDER BY timestamp DESC\r\n  LIMIT 1\r\n)\r\nSELECT \r\n  machine_status,\r\n  CASE \r\n    WHEN machine_status = 'Start' THEN JSONExtractString(metadata, 'uptime')\r\n    WHEN machine_status = 'Stop'  THEN JSONExtractString(metadata, 'downtime')\r\n  END AS metadata_time\r\nFROM latest_sensor_log;",
+          "refId": "A"
+        }
+      ],
+      "title": "Sensor-004 Status",
+      "type": "stat"
     },
     {
       "collapsed": false,
@@ -231,7 +615,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 9
+        "y": 13
       },
       "id": 16,
       "panels": [],
@@ -303,7 +687,7 @@
         "h": 9,
         "w": 13,
         "x": 0,
-        "y": 10
+        "y": 14
       },
       "id": 5,
       "options": {
@@ -336,7 +720,7 @@
           },
           "pluginVersion": "4.7.0",
           "queryType": "table",
-          "rawSql": "SELECT\r\n  toStartOfMinute(timestamp) AS time,\r\n  avg(measurement) AS \"Temperature\",\r\n  sensor_id\r\nFROM sensor_logs_db.sensor_logs\r\nWHERE \r\n  $__timeFilter(timestamp)\r\n  AND type = 'Temperature Sensor'\r\nGROUP BY time, sensor_id\r\nORDER BY time ASC",
+          "rawSql": "SELECT\r\n  toStartOfMinute(timestamp) AS time,\r\n  avg(measurement) AS \"Temperature\",\r\n  sensor_id\r\nFROM sensor_logs_db.sensor_logs\r\nWHERE \r\n  $__timeFilter(timestamp)\r\n  AND type = 'Temperature Sensor'\r\n  AND sensor_id IN ($sensor_id)\r\n  AND data_center IN ($data_center)\r\n  AND product IN ($product)\r\nGROUP BY time, sensor_id\r\nORDER BY time ASC",
           "refId": "A"
         }
       ],
@@ -383,7 +767,7 @@
         "h": 9,
         "w": 4,
         "x": 13,
-        "y": 10
+        "y": 14
       },
       "id": 9,
       "options": {
@@ -420,7 +804,7 @@
           },
           "pluginVersion": "4.7.0",
           "queryType": "table",
-          "rawSql": "  SELECT \r\n    AVG(measurement) AS \"Average Celsius\",\r\n    MAX(measurement) AS \"Maximum Celsius\",\r\n    MIN(measurement) AS \"Minimum Celsius\"\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE \r\n    $__timeFilter(timestamp)\r\n    AND type = 'Temperature Sensor'",
+          "rawSql": "  SELECT \r\n    AVG(measurement) AS \"Average Celsius\",\r\n    MAX(measurement) AS \"Maximum Celsius\",\r\n    MIN(measurement) AS \"Minimum Celsius\"\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE \r\n    $__timeFilter(timestamp)\r\n    AND type = 'Temperature Sensor'\r\n    AND sensor_id IN ($sensor_id)\r\n    AND data_center IN ($data_center)\r\n    AND product IN ($product)",
           "refId": "A"
         }
       ],
@@ -433,7 +817,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 19
+        "y": 23
       },
       "id": 20,
       "panels": [],
@@ -505,7 +889,7 @@
         "h": 9,
         "w": 13,
         "x": 0,
-        "y": 20
+        "y": 24
       },
       "id": 3,
       "options": {
@@ -538,7 +922,7 @@
           },
           "pluginVersion": "4.7.0",
           "queryType": "table",
-          "rawSql": "SELECT\r\n  toStartOfMinute(timestamp) AS time,\r\n  avg(measurement) AS \"Electrical\",\r\n  sensor_id\r\nFROM sensor_logs_db.sensor_logs\r\nWHERE \r\n  $__timeFilter(timestamp)\r\n  AND type = 'Electrical Sensor'\r\nGROUP BY time, sensor_id\r\nORDER BY time ASC",
+          "rawSql": "SELECT\r\n  toStartOfMinute(timestamp) AS time,\r\n  avg(measurement) AS \"Electrical\",\r\n  sensor_id\r\nFROM sensor_logs_db.sensor_logs\r\nWHERE \r\n  $__timeFilter(timestamp)\r\n  AND type = 'Electrical Sensor'\r\n  AND sensor_id IN ($sensor_id)\r\n  AND data_center IN ($data_center)\r\n  AND product IN ($product)\r\nGROUP BY time, sensor_id\r\nORDER BY time ASC",
           "refId": "A"
         }
       ],
@@ -585,7 +969,7 @@
         "h": 9,
         "w": 4,
         "x": 13,
-        "y": 20
+        "y": 24
       },
       "id": 11,
       "options": {
@@ -622,7 +1006,7 @@
           },
           "pluginVersion": "4.7.0",
           "queryType": "table",
-          "rawSql": "  SELECT \r\n    AVG(measurement) AS \"Average Ampere\",\r\n    MAX(measurement) AS \"Maximum Ampere\",\r\n    MIN(measurement) AS \"Minimum Ampere\"\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE \r\n    $__timeFilter(timestamp)\r\n    AND type = 'Electrical Sensor'",
+          "rawSql": "  SELECT \r\n    AVG(measurement) AS \"Average Ampere\",\r\n    MAX(measurement) AS \"Maximum Ampere\",\r\n    MIN(measurement) AS \"Minimum Ampere\"\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE \r\n    $__timeFilter(timestamp)\r\n    AND type = 'Electrical Sensor'\r\n    AND sensor_id IN ($sensor_id)\r\n    AND data_center IN ($data_center)\r\n    AND product IN ($product)",
           "refId": "A"
         }
       ],
@@ -635,7 +1019,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 29
+        "y": 33
       },
       "id": 19,
       "panels": [],
@@ -707,7 +1091,7 @@
         "h": 9,
         "w": 13,
         "x": 0,
-        "y": 30
+        "y": 34
       },
       "id": 4,
       "options": {
@@ -740,7 +1124,7 @@
           },
           "pluginVersion": "4.7.0",
           "queryType": "table",
-          "rawSql": "SELECT\r\n  toStartOfMinute(timestamp) AS time,\r\n  avg(measurement) AS \"Vibration\",\r\n  sensor_id\r\nFROM sensor_logs_db.sensor_logs\r\nWHERE \r\n  $__timeFilter(timestamp)\r\n  AND type = 'Vibration Sensor'\r\nGROUP BY time, sensor_id\r\nORDER BY time ASC",
+          "rawSql": "SELECT\r\n  toStartOfMinute(timestamp) AS time,\r\n  avg(measurement) AS \"Vibration\",\r\n  sensor_id\r\nFROM sensor_logs_db.sensor_logs\r\nWHERE \r\n  $__timeFilter(timestamp)\r\n  AND type = 'Vibration Sensor'\r\n  AND sensor_id IN ($sensor_id)\r\n  AND data_center IN ($data_center)\r\n  AND product IN ($product)\r\nGROUP BY time, sensor_id\r\nORDER BY time ASC",
           "refId": "A"
         }
       ],
@@ -787,7 +1171,7 @@
         "h": 9,
         "w": 4,
         "x": 13,
-        "y": 30
+        "y": 34
       },
       "id": 12,
       "options": {
@@ -824,7 +1208,7 @@
           },
           "pluginVersion": "4.7.0",
           "queryType": "table",
-          "rawSql": "  SELECT \r\n    AVG(measurement) AS \"Average Hz\",\r\n    MAX(measurement) AS \"Maximum Hz\",\r\n    MIN(measurement) AS \"Minimum Hz\"\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE \r\n    $__timeFilter(timestamp)\r\n    AND type = 'Vibration Sensor'",
+          "rawSql": "  SELECT \r\n    AVG(measurement) AS \"Average Hz\",\r\n    MAX(measurement) AS \"Maximum Hz\",\r\n    MIN(measurement) AS \"Minimum Hz\"\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE \r\n    $__timeFilter(timestamp)\r\n    AND type = 'Vibration Sensor'\r\n    AND sensor_id IN ($sensor_id)\r\n    AND data_center IN ($data_center)\r\n    AND product IN ($product)",
           "refId": "A"
         }
       ],
@@ -837,7 +1221,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 39
+        "y": 43
       },
       "id": 17,
       "panels": [],
@@ -909,7 +1293,7 @@
         "h": 9,
         "w": 13,
         "x": 0,
-        "y": 40
+        "y": 44
       },
       "id": 6,
       "options": {
@@ -942,7 +1326,7 @@
           },
           "pluginVersion": "4.7.0",
           "queryType": "table",
-          "rawSql": "SELECT\r\n  toStartOfMinute(timestamp) AS time,\r\n  avg(measurement) AS \"Humidity\",\r\n  sensor_id\r\nFROM sensor_logs_db.sensor_logs\r\nWHERE \r\n  $__timeFilter(timestamp)\r\n  AND type = 'Humidity Sensor'\r\nGROUP BY time, sensor_id\r\nORDER BY time ASC",
+          "rawSql": "SELECT\r\n  toStartOfMinute(timestamp) AS time,\r\n  avg(measurement) AS \"Humidity\",\r\n  sensor_id\r\nFROM sensor_logs_db.sensor_logs\r\nWHERE \r\n  $__timeFilter(timestamp)\r\n  AND type = 'Humidity Sensor'\r\n  AND sensor_id IN ($sensor_id)\r\n  AND data_center IN ($data_center)\r\n  AND product IN ($product)\r\nGROUP BY time, sensor_id\r\nORDER BY time ASC",
           "refId": "A"
         }
       ],
@@ -989,7 +1373,7 @@
         "h": 9,
         "w": 4,
         "x": 13,
-        "y": 40
+        "y": 44
       },
       "id": 13,
       "options": {
@@ -1026,7 +1410,7 @@
           },
           "pluginVersion": "4.7.0",
           "queryType": "table",
-          "rawSql": "  SELECT \r\n    AVG(measurement) AS \"Average Percentage\",\r\n    MAX(measurement) AS \"Maximum Percentage\",\r\n    MIN(measurement) AS \"Minimum Percentage\"\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE \r\n    $__timeFilter(timestamp)\r\n    AND type = 'Humidity Sensor'",
+          "rawSql": "  SELECT \r\n    AVG(measurement) AS \"Average Percentage\",\r\n    MAX(measurement) AS \"Maximum Percentage\",\r\n    MIN(measurement) AS \"Minimum Percentage\"\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE \r\n    $__timeFilter(timestamp)\r\n    AND type = 'Humidity Sensor'\r\n    AND sensor_id IN ($sensor_id)\r\n    AND data_center IN ($data_center)\r\n    AND product IN ($product)",
           "refId": "A"
         }
       ],
@@ -1039,7 +1423,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 49
+        "y": 53
       },
       "id": 18,
       "panels": [],
@@ -1111,7 +1495,7 @@
         "h": 9,
         "w": 13,
         "x": 0,
-        "y": 50
+        "y": 54
       },
       "id": 7,
       "options": {
@@ -1144,7 +1528,7 @@
           },
           "pluginVersion": "4.7.0",
           "queryType": "table",
-          "rawSql": "SELECT\r\n  toStartOfMinute(timestamp) AS time,\r\n  avg(measurement) AS \"Pressure\",\r\n  sensor_id\r\nFROM sensor_logs_db.sensor_logs\r\nWHERE \r\n  $__timeFilter(timestamp)\r\n  AND type = 'Pressure Sensor'\r\nGROUP BY time, sensor_id\r\nORDER BY time ASC",
+          "rawSql": "SELECT\r\n  toStartOfMinute(timestamp) AS time,\r\n  avg(measurement) AS \"Pressure\",\r\n  sensor_id\r\nFROM sensor_logs_db.sensor_logs\r\nWHERE \r\n  $__timeFilter(timestamp)\r\n  AND type = 'Pressure Sensor'\r\n  AND sensor_id IN ($sensor_id)\r\n  AND data_center IN ($data_center)\r\n  AND product IN ($product)\r\nGROUP BY time, sensor_id\r\nORDER BY time ASC",
           "refId": "A"
         }
       ],
@@ -1191,7 +1575,7 @@
         "h": 9,
         "w": 4,
         "x": 13,
-        "y": 50
+        "y": 54
       },
       "id": 14,
       "options": {
@@ -1228,7 +1612,7 @@
           },
           "pluginVersion": "4.7.0",
           "queryType": "table",
-          "rawSql": "  SELECT \r\n    AVG(measurement) AS \"Average Pascals\",\r\n    MAX(measurement) AS \"Maximum Pascals\",\r\n    MIN(measurement) AS \"Minimum Pascals\"\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE \r\n    $__timeFilter(timestamp)\r\n    AND type = 'Pressure Sensor'",
+          "rawSql": "  SELECT \r\n    AVG(measurement) AS \"Average Pascals\",\r\n    MAX(measurement) AS \"Maximum Pascals\",\r\n    MIN(measurement) AS \"Minimum Pascals\"\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE \r\n    $__timeFilter(timestamp)\r\n    AND type = 'Pressure Sensor'\r\n    AND sensor_id IN ($sensor_id)\r\n    AND data_center IN ($data_center)\r\n    AND product IN ($product)",
           "refId": "A"
         }
       ],
@@ -1241,16 +1625,81 @@
   "schemaVersion": 40,
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "allowCustomValue": false,
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "definition": "SELECT DISTINCT sensor_id\nFROM sensor_logs_db.sensor_logs;",
+        "includeAll": true,
+        "label": "Sensor Id",
+        "multi": true,
+        "name": "sensor_id",
+        "options": [],
+        "query": "SELECT DISTINCT sensor_id\nFROM sensor_logs_db.sensor_logs;",
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "allowCustomValue": false,
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "definition": "SELECT DISTINCT product\nFROM sensor_logs_db.sensor_logs;",
+        "includeAll": true,
+        "label": "Product",
+        "multi": true,
+        "name": "product",
+        "options": [],
+        "query": "SELECT DISTINCT product\nFROM sensor_logs_db.sensor_logs;",
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "allowCustomValue": false,
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "definition": "SELECT DISTINCT data_center\nFROM sensor_logs_db.sensor_logs;",
+        "description": "",
+        "includeAll": true,
+        "label": "Data Center",
+        "multi": true,
+        "name": "data_center",
+        "options": [],
+        "query": "SELECT DISTINCT data_center\nFROM sensor_logs_db.sensor_logs;",
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      }
+    ]
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-6h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Real-time Monitoring and Alerting in Industry Manufacturing",
   "uid": "bectyzthojrwgf",
-  "version": 24,
+  "version": 76,
   "weekStart": ""
 }

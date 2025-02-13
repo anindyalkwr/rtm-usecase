@@ -1,6 +1,5 @@
-import time
+import asyncio
 import random
-
 from log_sdk.logger_config import LoggerConfig
 from log_sdk.common.channel import Channel
 from log_sdk.common.data_center import DataCenter
@@ -31,8 +30,13 @@ class SensorProducer:
             kafka_enabled=True
         )
 
-    def produce_sensor_data(self):
-        """Runs the sensor data producer in a loop."""
+    async def initialize(self):
+        """
+        If LoggerConfig requires asynchronous initialization, await it here.
+        """
+        await self.logger.initialize()
+
+    async def produce_sensor_data(self):
         logger.info("Sensor data producer started...")
         while True:
             sensor_type = random.choice(SENSOR_TYPES)
@@ -46,9 +50,9 @@ class SensorProducer:
                 status = random.choices(STATUSES, weights=[0.9, 0.05, 0.05, 0.0])[0]
             
             action = random.choices(ACTIONS, weights=[0.9995, 0.0005, 0.0, 0.0])[0]
-
             self.logger.update_machine_status(action)
             
+            # Map the sensor type to its corresponding async logging method
             log_function = {
                 "Vibration": self.logger.log_vibration,
                 "Temperature": self.logger.log_temperature,
@@ -58,7 +62,7 @@ class SensorProducer:
             }.get(sensor_type)
 
             if log_function:
-                log_function(
+                await log_function(
                     channel=Channel.SENSOR,
                     data_center=DataCenter.FACTORY_1,
                     duration=duration,
@@ -67,4 +71,5 @@ class SensorProducer:
                     status=status,
                 )
 
-            time.sleep(max(0.1, random.gauss(1.0, 0.5)))
+            # Use asyncio.sleep for non-blocking delay
+            await asyncio.sleep(max(0.1, random.gauss(1.0, 0.5)))
