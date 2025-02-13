@@ -17,9 +17,10 @@ wait_for_port() {
 echo "Starting Kafka..."
 (cd kafka && docker-compose up -d)
 
+echo "Waiting for Kafka to be ready on port 9092..."
 wait_for_port "localhost" "9092"
 
-echo "Creating Kafka topic sensor_logs..."
+echo "Kafka is ready. Creating Kafka topic sensor_logs..."
 MSYS_NO_PATHCONV=1 docker exec kafka /usr/bin/kafka-topics --create \
   --topic sensor_logs \
   --bootstrap-server localhost:9092 \

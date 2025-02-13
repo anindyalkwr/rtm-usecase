@@ -1,15 +1,48 @@
 version: "3.8"
 
 services:
-  sensor-producer:
+  sensor-producer_0:
     build: .
-    container_name: sensor-producer
+    container_name: sensor-producer_0
     networks:
       - sensor-network-dev
     env_file:
-      - .env 
+      - .env.0
     ports:
       - "8000:8000"
+    restart: always
+
+  sensor-producer_1:
+    build: .
+    container_name: sensor-producer_1
+    networks:
+      - sensor-network-dev
+    env_file:
+      - .env.1
+    ports:
+      - "8001:8000"
+    restart: always
+
+  sensor-producer_2:
+    build: .
+    container_name: sensor-producer_2
+    networks:
+      - sensor-network-dev
+    env_file:
+      - .env.2
+    ports:
+      - "8002:8000"
+    restart: always
+
+  sensor-producer_3:
+    build: .
+    container_name: sensor-producer_3
+    networks:
+      - sensor-network-dev
+    env_file:
+      - .env.3
+    ports:
+      - "8003:8000"
     restart: always
 
 networks:
