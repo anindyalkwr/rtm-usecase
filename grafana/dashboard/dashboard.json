@@ -49,8 +49,16 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "red",
                 "value": null
+              },
+              {
+                "color": "orange",
+                "value": 85
+              },
+              {
+                "color": "green",
+                "value": 95
               }
             ]
           },
@@ -685,7 +693,7 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 13,
+        "w": 8,
         "x": 0,
         "y": 14
       },
@@ -766,7 +774,7 @@
       "gridPos": {
         "h": 9,
         "w": 4,
-        "x": 13,
+        "x": 8,
         "y": 14
       },
       "id": 9,
@@ -809,6 +817,182 @@
         }
       ],
       "title": "Temperature Sensor Statistics",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "cectyjnllkr9cf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 50,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "pointShape": "circle",
+            "pointSize": {
+              "fixed": 5
+            },
+            "pointStrokeWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "show": "points"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 12,
+        "y": 14
+      },
+      "id": 25,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mapping": "auto",
+        "series": [
+          {
+            "frame": {
+              "matcher": {
+                "id": "byIndex",
+                "options": 0
+              }
+            }
+          }
+        ],
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.7.0",
+          "queryType": "table",
+          "rawSql": "WITH aggregated AS (\r\n  SELECT\r\n    toStartOfMinute(timestamp) AS minute,\r\n    avg(measurement) AS avg_temperature,\r\n    avg(duration) AS avg_duration\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE\r\n    $__timeFilter(timestamp)\r\n    AND type = 'Temperature Sensor'\r\n    AND sensor_id IN ($sensor_id)\r\n    AND data_center IN ($data_center)\r\n    AND product IN ($product)\r\n  GROUP BY minute\r\n)\r\nSELECT\r\n  avg_duration AS \"Duration\",\r\n  avg_temperature AS \"Temperature\"\r\nFROM aggregated\r\nORDER BY minute ASC\r\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Scatter Plot Between Temperature and Duration",
+      "type": "xychart"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "cectyjnllkr9cf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 15
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 4,
+        "x": 20,
+        "y": 14
+      },
+      "id": 30,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": false
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.7.0",
+          "queryType": "table",
+          "rawSql": "  SELECT \r\n    AVG(duration) AS \"Average Duration\",\r\n    MAX(duration) AS \"Maximum Duration\",\r\n    MIN(duration) AS \"Minimum Duration\"\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE \r\n    $__timeFilter(timestamp)\r\n    AND type = 'Temperature Sensor'\r\n    AND sensor_id IN ($sensor_id)\r\n    AND data_center IN ($data_center)\r\n    AND product IN ($product)",
+          "refId": "A"
+        }
+      ],
+      "title": "Temperature Sensor Duration",
       "type": "stat"
     },
     {
@@ -887,7 +1071,7 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 13,
+        "w": 8,
         "x": 0,
         "y": 24
       },
@@ -957,7 +1141,7 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 20
               }
             ]
           },
@@ -968,7 +1152,7 @@
       "gridPos": {
         "h": 9,
         "w": 4,
-        "x": 13,
+        "x": 8,
         "y": 24
       },
       "id": 11,
@@ -1011,6 +1195,186 @@
         }
       ],
       "title": "Electrical Sensor Statistics",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "cectyjnllkr9cf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 50,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "pointShape": "circle",
+            "pointSize": {
+              "fixed": 5
+            },
+            "pointStrokeWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "show": "points"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 12,
+        "y": 24
+      },
+      "id": 26,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mapping": "auto",
+        "series": [
+          {
+            "frame": {
+              "matcher": {
+                "id": "byIndex",
+                "options": 0
+              }
+            }
+          }
+        ],
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.7.0",
+          "queryType": "table",
+          "rawSql": "WITH aggregated AS (\r\n  SELECT\r\n    toStartOfMinute(timestamp) AS minute,\r\n    avg(measurement) AS avg_electrical,\r\n    avg(duration) AS avg_duration\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE\r\n    $__timeFilter(timestamp)\r\n    AND type = 'Electrical Sensor'\r\n    AND sensor_id IN ($sensor_id)\r\n    AND data_center IN ($data_center)\r\n    AND product IN ($product)\r\n  GROUP BY minute\r\n)\r\nSELECT\r\n  avg_duration AS \"Duration\",\r\n  avg_electrical AS \"Electrical\"\r\nFROM aggregated\r\nORDER BY minute ASC\r\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Scatter Plot Between Electrical and Duration",
+      "type": "xychart"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "cectyjnllkr9cf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 15
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 4,
+        "x": 20,
+        "y": 24
+      },
+      "id": 31,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": false
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.7.0",
+          "queryType": "table",
+          "rawSql": "  SELECT \r\n    AVG(duration) AS \"Average Duration\",\r\n    MAX(duration) AS \"Maximum Duration\",\r\n    MIN(duration) AS \"Minimum Duration\"\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE \r\n    $__timeFilter(timestamp)\r\n    AND type = 'Electrical Sensor'\r\n    AND sensor_id IN ($sensor_id)\r\n    AND data_center IN ($data_center)\r\n    AND product IN ($product)",
+          "refId": "A"
+        }
+      ],
+      "title": "Electrical Sensor Duration",
       "type": "stat"
     },
     {
@@ -1089,7 +1453,7 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 13,
+        "w": 8,
         "x": 0,
         "y": 34
       },
@@ -1159,7 +1523,7 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 10
               }
             ]
           },
@@ -1170,7 +1534,7 @@
       "gridPos": {
         "h": 9,
         "w": 4,
-        "x": 13,
+        "x": 8,
         "y": 34
       },
       "id": 12,
@@ -1213,6 +1577,186 @@
         }
       ],
       "title": "Vibration Sensor Statistics",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "cectyjnllkr9cf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 50,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "pointShape": "circle",
+            "pointSize": {
+              "fixed": 5
+            },
+            "pointStrokeWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "show": "points"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 12,
+        "y": 34
+      },
+      "id": 27,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mapping": "auto",
+        "series": [
+          {
+            "frame": {
+              "matcher": {
+                "id": "byIndex",
+                "options": 0
+              }
+            }
+          }
+        ],
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.7.0",
+          "queryType": "table",
+          "rawSql": "WITH aggregated AS (\r\n  SELECT\r\n    toStartOfMinute(timestamp) AS minute,\r\n    avg(measurement) AS avg_vibration,\r\n    avg(duration) AS avg_duration\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE\r\n    $__timeFilter(timestamp)\r\n    AND type = 'Vibration Sensor'\r\n    AND sensor_id IN ($sensor_id)\r\n    AND data_center IN ($data_center)\r\n    AND product IN ($product)\r\n  GROUP BY minute\r\n)\r\nSELECT\r\n  avg_duration AS \"Duration\",\r\n  avg_vibration AS \"Vibration\"\r\nFROM aggregated\r\nORDER BY minute ASC\r\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Scatter Plot Between Vibration and Duration",
+      "type": "xychart"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "cectyjnllkr9cf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 15
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 4,
+        "x": 20,
+        "y": 34
+      },
+      "id": 32,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": false
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.7.0",
+          "queryType": "table",
+          "rawSql": "  SELECT \r\n    AVG(duration) AS \"Average Duration\",\r\n    MAX(duration) AS \"Maximum Duration\",\r\n    MIN(duration) AS \"Minimum Duration\"\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE \r\n    $__timeFilter(timestamp)\r\n    AND type = 'Vibration Sensor'\r\n    AND sensor_id IN ($sensor_id)\r\n    AND data_center IN ($data_center)\r\n    AND product IN ($product)",
+          "refId": "A"
+        }
+      ],
+      "title": "Vibration Sensor Duration",
       "type": "stat"
     },
     {
@@ -1291,7 +1835,7 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 13,
+        "w": 8,
         "x": 0,
         "y": 44
       },
@@ -1372,7 +1916,7 @@
       "gridPos": {
         "h": 9,
         "w": 4,
-        "x": 13,
+        "x": 8,
         "y": 44
       },
       "id": 13,
@@ -1415,6 +1959,186 @@
         }
       ],
       "title": "Humidity Sensor Statistics",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "cectyjnllkr9cf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 50,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "pointShape": "circle",
+            "pointSize": {
+              "fixed": 5
+            },
+            "pointStrokeWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "show": "points"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 12,
+        "y": 44
+      },
+      "id": 28,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mapping": "auto",
+        "series": [
+          {
+            "frame": {
+              "matcher": {
+                "id": "byIndex",
+                "options": 0
+              }
+            }
+          }
+        ],
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.7.0",
+          "queryType": "table",
+          "rawSql": "WITH aggregated AS (\r\n  SELECT\r\n    toStartOfMinute(timestamp) AS minute,\r\n    avg(measurement) AS avg_humidity,\r\n    avg(duration) AS avg_duration\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE\r\n    $__timeFilter(timestamp)\r\n    AND type = 'Humidity Sensor'\r\n    AND sensor_id IN ($sensor_id)\r\n    AND data_center IN ($data_center)\r\n    AND product IN ($product)\r\n  GROUP BY minute\r\n)\r\nSELECT\r\n  avg_duration AS \"Duration\",\r\n  avg_humidity AS \"Humidity\"\r\nFROM aggregated\r\nORDER BY minute ASC\r\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Scatter Plot Between Humidity and Duration",
+      "type": "xychart"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "cectyjnllkr9cf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 15
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 4,
+        "x": 20,
+        "y": 44
+      },
+      "id": 33,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": false
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.7.0",
+          "queryType": "table",
+          "rawSql": "  SELECT \r\n    AVG(duration) AS \"Average Duration\",\r\n    MAX(duration) AS \"Maximum Duration\",\r\n    MIN(duration) AS \"Minimum Duration\"\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE \r\n    $__timeFilter(timestamp)\r\n    AND type = 'Humidity Sensor'\r\n    AND sensor_id IN ($sensor_id)\r\n    AND data_center IN ($data_center)\r\n    AND product IN ($product)",
+          "refId": "A"
+        }
+      ],
+      "title": "Humidity Sensor Duration",
       "type": "stat"
     },
     {
@@ -1489,11 +2213,36 @@
           },
           "unit": "pressurepa"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "Pressure sensor-004"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
-        "w": 13,
+        "w": 8,
         "x": 0,
         "y": 54
       },
@@ -1563,7 +2312,7 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 5
               }
             ]
           },
@@ -1574,7 +2323,7 @@
       "gridPos": {
         "h": 9,
         "w": 4,
-        "x": 13,
+        "x": 8,
         "y": 54
       },
       "id": 14,
@@ -1618,6 +2367,186 @@
       ],
       "title": "Pressure Sensor Statistics",
       "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "cectyjnllkr9cf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 50,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "pointShape": "circle",
+            "pointSize": {
+              "fixed": 5
+            },
+            "pointStrokeWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "show": "points"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 12,
+        "y": 54
+      },
+      "id": 29,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mapping": "auto",
+        "series": [
+          {
+            "frame": {
+              "matcher": {
+                "id": "byIndex",
+                "options": 0
+              }
+            }
+          }
+        ],
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.7.0",
+          "queryType": "table",
+          "rawSql": "WITH aggregated AS (\r\n  SELECT\r\n    toStartOfMinute(timestamp) AS minute,\r\n    avg(measurement) AS avg_pressure,\r\n    avg(duration) AS avg_duration\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE\r\n    $__timeFilter(timestamp)\r\n    AND type = 'Pressure Sensor'\r\n    AND sensor_id IN ($sensor_id)\r\n    AND data_center IN ($data_center)\r\n    AND product IN ($product)\r\n  GROUP BY minute\r\n)\r\nSELECT\r\n  avg_duration AS \"Duration\",\r\n  avg_pressure AS \"Pressure\"\r\nFROM aggregated\r\nORDER BY minute ASC\r\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Scatter Plot Between Pressure and Duration",
+      "type": "xychart"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "cectyjnllkr9cf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 15
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 4,
+        "x": 20,
+        "y": 54
+      },
+      "id": 34,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": false
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.7.0",
+          "queryType": "table",
+          "rawSql": "  SELECT \r\n    AVG(duration) AS \"Average Duration\",\r\n    MAX(duration) AS \"Maximum Duration\",\r\n    MIN(duration) AS \"Minimum Duration\"\r\n  FROM sensor_logs_db.sensor_logs\r\n  WHERE \r\n    $__timeFilter(timestamp)\r\n    AND type = 'Pressure Sensor'\r\n    AND sensor_id IN ($sensor_id)\r\n    AND data_center IN ($data_center)\r\n    AND product IN ($product)",
+          "refId": "A"
+        }
+      ],
+      "title": "Pressure Sensor Duration",
+      "type": "stat"
     }
   ],
   "preload": false,
@@ -1630,10 +2559,12 @@
         "allowCustomValue": false,
         "current": {
           "text": [
-            "All"
+            "sensor-002",
+            "sensor-003"
           ],
           "value": [
-            "$__all"
+            "sensor-002",
+            "sensor-003"
           ]
         },
         "definition": "SELECT DISTINCT sensor_id\nFROM sensor_logs_db.sensor_logs;",
@@ -1693,13 +2624,13 @@
     ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Real-time Monitoring and Alerting in Industry Manufacturing",
   "uid": "bectyzthojrwgf",
-  "version": 76,
+  "version": 97,
   "weekStart": ""
 }
