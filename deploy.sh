@@ -13,19 +13,18 @@ wait_for_port() {
 }
 
 
-### 1. Start Kafka ###
-echo "Starting Kafka..."
-(cd kafka && docker-compose up -d)
+# List of Kafka bootstrap servers
+BOOTSTRAP_SERVERS="192.168.59.103:30749,192.168.59.103:32272,192.168.59.103:31445"
 
-echo "Waiting for Kafka to be ready on port 9092..."
-wait_for_port "localhost" "9092"
+echo "Waiting for Kafka cluster to be ready on the following bootstrap servers:"
+echo $BOOTSTRAP_SERVERS
 
-echo "Kafka is ready. Creating Kafka topic sensor_logs..."
-MSYS_NO_PATHCONV=1 docker exec kafka /usr/bin/kafka-topics --create \
-  --topic sensor_logs \
-  --bootstrap-server localhost:9092 \
-  --replication-factor 1 \
-  --partitions 1 || echo "Topic sensor_logs might already exist or an error occurred."
+# Wait for each broker port to be ready
+wait_for_port "192.168.59.103" "30749"
+wait_for_port "192.168.59.103" "32272"
+wait_for_port "192.168.59.103" "31445"
+
+echo "Kafka cluster is ready."
 
 
 ### 2. Start ClickHouse ###

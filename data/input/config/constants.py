@@ -30,6 +30,6 @@ ANOMALY_DISTRIBUTIONS = {
 NORMAL_DURATION_DISTRIBUTION = lambda: round(max(0.1, random.gauss(2.5, 1.0)), 2)
 ANOMALY_DURATION_DISTRIBUTION = lambda: round(max(5.0, random.gauss(10.0, 3.0)), 2)
 
-SENSOR_ID = get_env("SENSOR_ID")
-KAFKA_BOOTSTRAP_SERVERS = get_env("KAFKA_BOOTSTRAP_SERVERS")
-KAFKA_TOPIC = get_env("KAFKA_TOPIC", "")
+SENSOR_ID = get_env("SENSOR_ID", "sensor-local")
+KAFKA_BOOTSTRAP_SERVERS = get_env("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+KAFKA_TOPIC = get_env("KAFKA_TOPIC", "sensor-logs")

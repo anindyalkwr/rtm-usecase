@@ -1,0 +1,14 @@
+topics: [ 'sensor-logs']
+partitioning_params:
+  algorithm: 'BroMax'
+  T: 1.e+6
+  L: 0.2
+  U: 2
+  Tp: 1.e+6
+  Tc: 2.e+6
+  Hmax: 3000
+  lr: 1.e-3
+  u: 5.e-3
+  c: 1
+  r: 3
+  B: 3

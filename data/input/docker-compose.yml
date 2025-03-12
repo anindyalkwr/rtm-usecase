@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   sensor-producer_0:
-    build: .
+    image: edge-devices:0.0.1
     container_name: sensor-producer_0
     networks:
       - sensor-network-dev
@@ -13,7 +13,7 @@ services:
     restart: always
 
   sensor-producer_1:
-    build: .
+    image: edge-devices:0.0.1
     container_name: sensor-producer_1
     networks:
       - sensor-network-dev
@@ -24,7 +24,7 @@ services:
     restart: always
 
   sensor-producer_2:
-    build: .
+    image: edge-devices:0.0.1
     container_name: sensor-producer_2
     networks:
       - sensor-network-dev
@@ -35,7 +35,7 @@ services:
     restart: always
 
   sensor-producer_3:
-    build: .
+    image: edge-devices:0.0.1
     container_name: sensor-producer_3
     networks:
       - sensor-network-dev
