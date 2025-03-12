@@ -1,16 +1,12 @@
-.PHONY: up-all down-all up-kafka up-clickhouse up-processing up-grafana up-input \
-        down-kafka down-clickhouse down-processing down-grafana down-input
+.PHONY: up-all down-all up-clickhouse up-processing up-grafana up-input up-prometheus \
+        down-clickhouse down-processing down-grafana down-input down-prometheus
 
 up-all:
 	@echo "Deploying all services in order..."
 	bash ./deploy.sh
 
-down-all: down-kafka down-clickhouse down-processing down-grafana down-input
+down-all: down-clickhouse down-processing down-grafana down-input down-prometheus
 	@echo "All services have been brought down."
-
-up-kafka:
-	@echo "Starting Kafka..."
-	(cd kafka && docker-compose up -d)
 
 up-clickhouse:
 	@echo "Starting ClickHouse..."
@@ -28,11 +24,11 @@ up-input:
 	@echo "Starting Data Input..."
 	(cd data/input && docker-compose up -d)
 
-### Individual DOWN targets ###
+up-prometheus:
+	@echo "Starting Prometheus..."
+	(cd prometheus && docker-compose up -d)
 
-down-kafka:
-	@echo "Stopping Kafka..."
-	(cd kafka && docker-compose down)
+### Individual DOWN targets ###
 
 down-clickhouse:
 	@echo "Stopping ClickHouse..."
@@ -49,3 +45,7 @@ down-grafana:
 down-input:
 	@echo "Stopping Data Input..."
 	(cd data/input && docker-compose down)
+
+down-prometheus:
+	@echo "Stopping Prometheus..."
+	(cd prometheus && docker-compose down)

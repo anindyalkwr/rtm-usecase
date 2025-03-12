@@ -14,15 +14,15 @@ wait_for_port() {
 
 
 # List of Kafka bootstrap servers
-BOOTSTRAP_SERVERS="192.168.59.103:30749,192.168.59.103:32272,192.168.59.103:31445"
+BOOTSTRAP_SERVERS="192.168.59.104:30565,192.168.59.104:30315,192.168.59.104:30745"
 
 echo "Waiting for Kafka cluster to be ready on the following bootstrap servers:"
 echo $BOOTSTRAP_SERVERS
 
 # Wait for each broker port to be ready
-wait_for_port "192.168.59.103" "30749"
-wait_for_port "192.168.59.103" "32272"
-wait_for_port "192.168.59.103" "31445"
+wait_for_port "192.168.59.104" "30565"
+wait_for_port "192.168.59.104" "30315"
+wait_for_port "192.168.59.104" "30745"
 
 echo "Kafka cluster is ready."
 
@@ -84,5 +84,9 @@ echo "Starting Grafana..."
 ### 5. Start Data Input ###
 echo "Starting Data Input..."
 (cd data/input && docker-compose up -d)
+
+### 6. Start Data Input ###
+echo "Starting Prometheus..."
+(cd prometheus && docker-compose up -d)
 
 echo "All services have been started."
