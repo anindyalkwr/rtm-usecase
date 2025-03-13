@@ -14,15 +14,15 @@ wait_for_port() {
 
 
 # List of Kafka bootstrap servers
-BOOTSTRAP_SERVERS="192.168.59.104:30565,192.168.59.104:30315,192.168.59.104:30745"
+BOOTSTRAP_SERVERS="192.168.59.106:32060,192.168.59.106:31709,192.168.59.106:31218"
 
 echo "Waiting for Kafka cluster to be ready on the following bootstrap servers:"
 echo $BOOTSTRAP_SERVERS
 
 # Wait for each broker port to be ready
-wait_for_port "192.168.59.104" "30565"
-wait_for_port "192.168.59.104" "30315"
-wait_for_port "192.168.59.104" "30745"
+wait_for_port "192.168.59.106" "32060"
+wait_for_port "192.168.59.106" "31709"
+wait_for_port "192.168.59.106" "31218"
 
 echo "Kafka cluster is ready."
 
@@ -54,20 +54,20 @@ done
 echo "All migrations applied successfully."
 
 
-### 3. Start Data Processing ###
-echo "Starting Data Processing..."
-(cd data/processing && docker-compose up -d)
+# ### 3. Start Data Processing ###
+# echo "Starting Data Processing..."
+# (cd data/processing && docker-compose up -d)
 
-### 3.5 Submit Flink Job ###
-echo "Waiting for Flink JobManager to be ready on port 8081..."
-wait_for_port "localhost" "8081"
-echo "Flink JobManager is ready. Submitting job..."
+# ### 3.5 Submit Flink Job ###
+# echo "Waiting for Flink JobManager to be ready on port 8081..."
+# wait_for_port "localhost" "8081"
+# echo "Flink JobManager is ready. Submitting job..."
 
-# Submit the job to the Flink cluster (using the Bash command)
-MSYS_NO_PATHCONV=1 docker exec jobmanager /opt/flink/bin/flink run \
-  --python /tmp/src/flink_job.py \
-  -pyFiles file:///tmp/src/src.zip \
-  -d
+# # Submit the job to the Flink cluster (using the Bash command)
+# MSYS_NO_PATHCONV=1 docker exec jobmanager /opt/flink/bin/flink run \
+#   --python /tmp/src/flink_job.py \
+#   -pyFiles file:///tmp/src/src.zip \
+#   -d
 
 # For PowerShell, you might use (uncomment if needed):
 # MSYS_NO_PATHCONV=1 docker exec jobmanager /opt/flink/bin/flink run `

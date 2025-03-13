@@ -28,6 +28,7 @@ dist/
 
 # Logs
 *.log
+logs/
 
 # Environment variable files
 .env*
