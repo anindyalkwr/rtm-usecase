@@ -13,19 +13,21 @@ wait_for_port() {
 }
 
 
-# List of Kafka bootstrap servers
-BOOTSTRAP_SERVERS="192.168.59.106:32060,192.168.59.106:31709,192.168.59.106:31218"
+### 1. Start Kafka ###
+echo "Starting Kafka..."
+(cd kafka/archived && docker-compose up -d)
 
-echo "Waiting for Kafka cluster to be ready on the following bootstrap servers:"
-echo $BOOTSTRAP_SERVERS
+echo "Waiting for Kafka to be ready on port 9092..."
+wait_for_port "localhost" "9092"
 
-# Wait for each broker port to be ready
-wait_for_port "192.168.59.106" "32060"
-wait_for_port "192.168.59.106" "31709"
-wait_for_port "192.168.59.106" "31218"
+echo "Kafka is ready. Creating Kafka topic sensor_logs..."
+MSYS_NO_PATHCONV=1 docker exec kafka /usr/bin/kafka-topics --create \
+  --topic sensor-logs \
+  --bootstrap-server localhost:9092 \
+  --replication-factor 1 \
+  --partitions 10 || echo "Topic sensor_logs might already exist or an error occurred."
 
 echo "Kafka cluster is ready."
-
 
 ### 2. Start ClickHouse ###
 echo "Starting ClickHouse..."
@@ -54,22 +56,22 @@ done
 echo "All migrations applied successfully."
 
 
-# ### 3. Start Data Processing ###
-# echo "Starting Data Processing..."
-# (cd data/processing && docker-compose up -d)
+### 3. Start Data Processing ###
+echo "Starting Data Processing..."
+(cd data/processing && docker-compose up -d)
 
-# ### 3.5 Submit Flink Job ###
-# echo "Waiting for Flink JobManager to be ready on port 8081..."
-# wait_for_port "localhost" "8081"
-# echo "Flink JobManager is ready. Submitting job..."
+### 3.5 Submit Flink Job ###
+echo "Waiting for Flink JobManager to be ready on port 8081..."
+wait_for_port "localhost" "8081"
+echo "Flink JobManager is ready. Submitting job..."
 
-# # Submit the job to the Flink cluster (using the Bash command)
-# MSYS_NO_PATHCONV=1 docker exec jobmanager /opt/flink/bin/flink run \
-#   --python /tmp/src/flink_job.py \
-#   -pyFiles file:///tmp/src/src.zip \
-#   -d
+# Submit the job to the Flink cluster (using the Bash command)
+MSYS_NO_PATHCONV=1 docker exec jobmanager /opt/flink/bin/flink run \
+  --python /tmp/src/flink_job.py \
+  -pyFiles file:///tmp/src/src.zip \
+  -d
 
-# For PowerShell, you might use (uncomment if needed):
+# # For PowerShell, you might use (uncomment if needed):
 # MSYS_NO_PATHCONV=1 docker exec jobmanager /opt/flink/bin/flink run `
 #   --python /tmp/src/flink_job.py `
 #   --pyFiles file:///tmp/src/src.zip `

@@ -24,6 +24,8 @@ async def main():
             # Wait for a new message asynchronously.
             msg = await consumer.receive()
             print("Received Message:", msg)
+
+            await asyncio.sleep(1)
     except KeyboardInterrupt:
         print("\nStopping Kafka Consumer...")
     finally:

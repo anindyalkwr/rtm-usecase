@@ -14,7 +14,7 @@ spec:
     - type: apache-kafka       
       metadata:
         topic: sensor-logs  
-        bootstrapServers: my-cluster-kafka-bootstrap.kafka.svc:9092 
+        bootstrapServers: 192.168.59.1:9094
         consumerGroup: scaling_sensor_group
         lagThreshold: '1'
         offsetResetPolicy: 'latest'
