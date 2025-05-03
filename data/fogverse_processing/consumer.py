@@ -18,7 +18,13 @@ scaler_config = KedaScalerConfig(
 # Define additional environment variables if needed
 additional_env_vars = {
     "CUSTOM_VAR": "custom_value",
-    "ANOTHER_VAR": "another_value"
+    "ANOTHER_VAR": "another_value",
+    "CLICKHOUSE_HOST": "host.docker.internal",
+    "CLICKHOUSE_PORT": "9000", 
+    "CLICKHOUSE_USERNAME": "admin",
+    "CLICKHOUSE_PASSWORD": "admin_password",
+    "CLICKHOUSE_DATABASE": "sensor_logs_db",
+    "CLICKHOUSE_TABLE": "sensor_logs"
 }
 
 # Deploy Kafka consumer with KEDA, including custom env variables

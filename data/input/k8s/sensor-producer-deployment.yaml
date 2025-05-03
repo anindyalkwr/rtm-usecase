@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sensor-producer
+  labels:
+    app: sensor-producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sensor-producer
+  template:
+    metadata:
+      labels:
+        app: sensor-producer
+    spec:
+      containers:
+      - name: sensor-producer
+        image: edge-devices:0.0.1
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: sensor-producer-config
+        env:
+        - name: SENSOR_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name

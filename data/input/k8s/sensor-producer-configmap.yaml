@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sensor-producer-config
+data:
+  KAFKA_BOOTSTRAP_SERVERS: "192.168.59.1:9094"
+  KAFKA_TOPIC: "sensor-logs"
+  TZ: "Asia/Jakarta"
+  # SENSOR_ID will be unique per pod and set in the Deployment

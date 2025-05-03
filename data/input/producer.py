@@ -71,4 +71,4 @@ class SensorProducer:
                     status=status,
                 )
 
-            # await asyncio.sleep(max(0.1, random.gauss(1.0, 0.5)))
+            await asyncio.sleep(max(0.1, random.gauss(1.0, 0.5)))
