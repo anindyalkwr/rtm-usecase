@@ -10,10 +10,12 @@ consumer_config = KafkaConsumerConfig(
 
 # Define KEDA scaling settings
 scaler_config = KedaScalerConfig(
-    min_replicas=0,
-    max_replicas=10,
-    lag_threshold=10
-)
+    min_replicas=1,
+    max_replicas=32,
+    cooldown_period=60,
+    polling_interval=5,
+    lag_threshold=5
+)  
 
 # Define additional environment variables if needed
 additional_env_vars = {

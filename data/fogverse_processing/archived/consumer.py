@@ -47,7 +47,6 @@ async def main():
         topics=[KAFKA_TOPIC],
         bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
         group_id=GROUP_ID,
-        auto_offset_reset='latest'
     )
     
     inserter = ClickHouseInserter()
@@ -80,6 +79,7 @@ async def main():
                 'metadata': json.dumps(msg_data['metadata'])
             }
             
+            # await asyncio.sleep(0.2)
             await inserter.insert_data(data)
             
     except KeyboardInterrupt:
