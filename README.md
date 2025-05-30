@@ -6,13 +6,24 @@ This project demonstrates a **real-time monitoring and alerting system for indus
 
 ## Architecture Overview
 
-![System Design](./images/System%20Design.png)
+**Overview 1: System Design**
 
-This system follows a **distributed streaming approach** where sensor data is collected, processed, stored, and visualized for real-time monitoring and alerting.
+![System Design](./images/Overview%201.png)
+
+This diagram provides a high-level overview of the real-time monitoring and alerting system's architecture.
+
+**Overview 2: Real-Time Analytics Framework**
+
+![System Design](./images/Overview%202%20(b).png)
+
+This diagram illustrates the detailed flow of data from sensor acquisition through processing, storage, visualization, and alerting.
+
+The system follows a **distributed streaming paradigm**, ensuring continuous collection, processing, storage, and visualization of sensor data for real-time monitoring and alerting purposes.
 
 ---
 
 ## Components Overview
+This system is composed of several key components, each residing within a dedicated directory for modularity and ease of management. The deployment of these components is orchestrated using Docker Compose, with specific commands available in the Makefile.
 
 ### Edge Devices (Sensor Data Collection)
 - **Devices:** Python-enabled microcontrollers or industrial IoT sensors.
@@ -43,18 +54,6 @@ This system follows a **distributed streaming approach** where sensor data is co
 - Provides real-time **dashboards** for visualizing sensor data.
 - Enables threshold-based **alerting** for equipment failures.
 - Connects directly to ClickHouse for querying data.
-
----
-
-## Additional Data Processing & Storage Pipeline
-
-Apart from real-time monitoring, the system includes a **batch data pipeline**:
-
-1. **Monitor Log Files:** Utilizes the Elastic Stack.
-2. **Convert Logs to CSV:** For structured analysis.
-3. **Store Data in GCP Bucket:** For long-term retention.
-   - **Recommendation (Low Priority):** Consider integrating backup storage solutions to further secure and archive data, although this is not based on a real-world example.
-4. **Train ML Models in Jupyter Notebooks:** For future predictive maintenance.
 
 ---
 

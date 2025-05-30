@@ -72,4 +72,4 @@ class SensorProducer:
                 )
 
             # Poisson-distributed interval with 2.5 average events/sec and max 10/sec
-            await asyncio.sleep(max(0.1, random.expovariate(1)))
+            await asyncio.sleep(max(0.1, random.expovariate(64))) # 54 event / sec
