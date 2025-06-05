@@ -1,83 +1,90 @@
 # Real-time Monitoring and Alerting in Industry Manufacturing
 
-This project demonstrates a **real-time monitoring and alerting system for industrial manufacturing** using a scalable and modular architecture.
+This project demonstrates a **real-time monitoring and alerting system for industrial manufacturing**, built with a **modular and scalable architecture** designed for continuous processing and high availability.
 
----
 
 ## Architecture Overview
 
-**Overview 1: System Design**
+### System Design
+
+The architecture is divided into several layers, starting from sensor data collection to final visualization and alerting.
 
 ![System Design](./images/Overview%201.png)
 
-This diagram provides a high-level overview of the real-time monitoring and alerting system's architecture.
-
-**Overview 2: Real-Time Analytics Framework**
+### Real-Time Analytics Framework
 
 ![System Design](./images/Overview%202%20(b).png)
 
-This diagram illustrates the detailed flow of data from sensor acquisition through processing, storage, visualization, and alerting.
+The data flows from:
 
-The system follows a **distributed streaming paradigm**, ensuring continuous collection, processing, storage, and visualization of sensor data for real-time monitoring and alerting purposes.
+* **Data Sources** (IoT sensors capturing metrics such as temperature, vibration, and pressure), into
+* **Real-time Analytics**, where a custom **SDK Logger** logs sensor data locally for archival and publishes it to a **Kafka Cluster**.
+* Kafka messages are consumed by a **KEDA-driven Consumer**, which can interact with external side services such as REST APIs, caches, or ML models for enrichment.
+* Processed outputs are then stored in **ClickHouse**, an OLAP analytical time-series database.
+* Finally, **Grafana** queries ClickHouse for real-time dashboards, while **Prometheus** scrapes system metrics for infrastructure-level insights.
 
----
+## How to Reproduce the Experiment
 
-## Components Overview
-This system is composed of several key components, each residing within a dedicated directory for modularity and ease of management. The deployment of these components is orchestrated using Docker Compose, with specific commands available in the Makefile.
+The system includes infrastructure services running in Docker containers and a data pipeline running across Kubernetes-managed producers and consumers.
 
-### Edge Devices (Sensor Data Collection)
-- **Devices:** Python-enabled microcontrollers or industrial IoT sensors.
-- **Data Type:** Vibration, temperature, humidity, pressure, and electrical readings.
-- **Logging:**
-  - Uses a **custom Log SDK** to structure and log data.
-  - **Implemented Approach:** Sensor data is logged both to local log files and forwarded to a Kafka topic.
+### Step 1: Set Up Infrastructure
 
-### Apache Kafka (Message Broker & Data Streaming)
-- Kafka acts as the central **message bus** for streaming raw sensor data.
-- Ensures **fault tolerance** and **high availability**.
+Ensure Docker is installed. Then use the following commands to start each infrastructure component:
 
-### Apache Flink (Stream Processing & ML Inference)
-- **Extracts, Transforms, and Loads (ETL):** Processes real-time data from Kafka.
-- **ML Inference:** Runs pre-trained ML models for anomaly detection.
-  - **Recommendation:** Load pre-trained ML models directly within Flink jobs (Low Priority) for more efficient real-time inference.
-- **Data Transformation:**
-  - **Current Pipeline:** Direct pipeline from Kafka to ClickHouse.
-  - **Future Enhancements:** Add advanced transformations (e.g., windowing, aggregating) to maximize batch insert efficiency and improve processing throughput (Medium Priority).
+```bash
+make kafka-up       # Starts Kafka (KRaft) broker and Exporters
+make clickhouse-up  # Starts ClickHouse service
+make prometheus-up  # Starts Prometheus
+make grafana-up     # Starts Grafana dashboard
+```
 
-### ClickHouse (Analytical Database Engine)
-- Optimized for high-speed **time-series data storage**.
-- Stores both **raw** and **processed sensor data**.
-- Allows fast querying for analytics and monitoring.
-- **Recommendation:** Implement event-driven database housekeeping by triggering functions in ClickHouse (High Priority). For example, every 24 hours, merge daily data into a single summarized row in another table to improve memory usage and query performance.
+> Note: Avoid using legacy Flink-related scripts such as `deploy.sh` and legacy `Makefile` targets.
 
-### Grafana (Visualization & Alerting System)
-- Provides real-time **dashboards** for visualizing sensor data.
-- Enables threshold-based **alerting** for equipment failures.
-- Connects directly to ClickHouse for querying data.
+### Step 2: Deploy Producer and Consumer
 
----
+Make sure you have access to a Kubernetes cluster and the **KEDA operator** installed. For KEDA installation via Helm, please refer to the Fogverse GitHub repository.
 
-## Implementation Details
+#### Deploying the Producer
 
-- **Logging Mechanism:**
-  The custom Log SDK is used to log sensor data both locally (log files) and to Kafka. This dual logging approach ensures that raw data is captured reliably and can be processed in real time.
-  
-- **Data Pipeline:**
-  The implemented pipeline efficiently streams data from Kafka into ClickHouse, which is then visualized in Grafana. This ensures seamless data flow from sensor collection to end-user dashboards.
+Navigate to the `data/input` directory. The producer deployment includes configuration and deployment manifests:
 
----
+```bash
+kubectl apply -f k8s/sensor-producer-configmap.yaml
+kubectl apply -f k8s/sensor-producer-deployment.yaml
+```
 
-## Deployment & Scalability
+This deploys the sensor data producer used to simulate incoming industrial metrics.
 
-### Dockerized Microservices Approach
+> To use the same setup used in the thesis experiment, run the scripts provided in the `data/experiment` folder.
 
-Each component is **containerized** using Docker and orchestrated via **Docker Compose**. This setup ensures:
+#### Running the Consumer
 
-- **Scalability:** Additional sensors or processing nodes can be dynamically added.
-- **Fault Tolerance:** Services are automatically restarted if a failure occurs.
-- **Distributed Processing:** Both Flink and Kafka are capable of handling high-throughput sensor streams.
+The consumer is located in the `data/fogverse_processing` directory. After KEDA is set up, simply run:
 
----
+```bash
+python consumer.py
+```
+
+The consumer will connect to the Kafka topic and begin processing messages. KEDA will automatically manage the number of consumer replicas based on Kafka lag.
+
+### Step 3: Run the Experiment
+
+To simulate workload and drive the pipeline:
+
+```bash
+cd data/experiment
+```
+
+Run the experiment script:
+
+* On Windows:
+
+```cmd
+run_experiment.bat
+```
+
+* On macOS/Linux: Modify or adapt the script as needed for your operating system.
+
 
 ## Use Case: Industrial Machine Monitoring
 
@@ -85,34 +92,24 @@ Each component is **containerized** using Docker and orchestrated via **Docker C
 
 - Industrial machines are equipped with **multiple sensors** monitoring operational conditions.
 - Each sensor **sends real-time data** to Kafka.
-- Flink **detects anomalies** such as sudden temperature spikes.
+- Consumers **detects anomalies** such as sudden temperature spikes.
 - Alerts are triggered in **Grafana** if any metric exceeds a safe threshold.
 - Engineers receive alerts and can take **preventive action** before machine failure occurs.
 
----
 
 ## Future Enhancements and Recommendations
 
 - **Backup Storage (Low Priority):**
   Explore integrating backup storage solutions to provide additional data redundancy and long-term archival.
-  
-- **Event-Driven Database Housekeeping (High Priority):**
-  Implement trigger functions on ClickHouse to perform routine database housekeeping. For example, every 24 hours, merge daily records into a summarized row in a dedicated table to optimize memory usage.
-  
-- **Enhanced Flink Processing:**
-  - **ML Model Integration (Low Priority):**
-    Load pre-trained ML models directly within the Flink job to streamline real-time anomaly detection.
-  - **Advanced Data Transformations (Medium Priority):**
-    Incorporate additional transformation steps (e.g., windowing, aggregation) to leverage batch inserts more effectively and enhance the processing efficiency.
 
-- **Automated Self-Healing Pipelines:**
+- **Automated Self-Healing Pipelines (High Priority):**
   Future work could include developing automated mechanisms to detect and remediate sensor faults, further increasing system resilience.
   
-- **More Advanced Predictive Maintenance Models:**
-  Continue refining and training predictive maintenance models to improve early fault detection and operational efficiency.
+- **Predictive Scaling (High Priority):**
+  Implementing intelligent auto-scaling mechanisms for consumers based on predictive analytics.
 
----
 
 ## Conclusion
 
-This architecture provides a **highly scalable, fault-tolerant, and real-time monitoring system** for industrial manufacturing. By leveraging Kafka, Flink, ClickHouse, and Grafana, industries can **prevent equipment failures, reduce downtime, and optimize performance**. The implemented solutions—such as the use of a custom Log SDK for dual logging and a streamlined pipeline from Kafka to ClickHouse to Grafana—combined with the proposed recommendations, lay a strong foundation for future enhancements in industrial monitoring systems.
+This architecture provides a **highly scalable, fault-tolerant, and real-time monitoring system** for industrial manufacturing. By leveraging Kafka, KEDA Consumer, ClickHouse, and Grafana, industries can **prevent equipment failures, reduce downtime, and optimize performance**. The implemented solutions—such as the use of a custom Log SDK for dual logging and a streamlined pipeline from Kafka to ClickHouse to Grafana—combined with the proposed recommendations, lay a strong foundation for future enhancements in industrial monitoring systems.
+
